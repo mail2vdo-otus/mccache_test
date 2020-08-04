@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "testrest-chart.fullname" . }}
+  labels:
+    {{- include "testrest-chart.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "testrest-chart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "testrest-chart.selectorLabels" . | nindent 8 }}
+      annotations:
+          checksum/config: {{ include (print $.Template.BasePath "/config.yaml") . | sha256sum }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          env:
+           - name: MEMCACHED_ENABLED
+             valueFrom:
+               configMapKeyRef:
+                name: testrest-conf
+                key: MEMCACHED_ENABLED
+           - name: MEMCACHED_URI
+             valueFrom:
+               configMapKeyRef:
+                 name: testrest-conf
+                 key: MEMCACHED_URI
+           - name: MEMCACHED_EXP
+             valueFrom:
+               configMapKeyRef:
+                 name: testrest-conf
+                 key: MEMCACHED_EXP
+           - name: DATABASE_URI
+             valueFrom:
+               configMapKeyRef:
+                 name: testrest-conf
+                 key: DATABASE_URI
+           - name: DATABASE_USER
+             valueFrom:
+               configMapKeyRef:
+                name: testrest-conf
+                key: DATABASE_USER
+           - name: appStatusMessage
+             valueFrom:
+               configMapKeyRef:
+                  name: testrest-conf
+                  key: appStatusMessage
+           - name: DATABASE_PASSWORD
+             valueFrom:
+               secretKeyRef:
+                  name: testrest-conf-sec
+                  key: DATABASE_PASSWORD
+          readinessProbe:
+            httpGet:
+             port: 8000
+             path: /health
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+             port: 8000
+             path: /health
+            initialDelaySeconds: 10
+            periodSeconds: 10
+

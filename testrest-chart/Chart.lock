@@ -1,0 +1,9 @@
+dependencies:
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 8.9.4
+- name: memcached
+  repository: https://charts.bitnami.com/bitnami
+  version: 4.2.20
+digest: sha256:b234be0b82932429bd61b1964e957536096fae4ab810a6edbde4f149a1afcb96
+generated: "2020-07-28T20:06:18.786398653Z"
